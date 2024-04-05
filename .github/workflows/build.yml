@@ -53,16 +53,6 @@ jobs:
         run: |
           echo "$(brew --prefix bison)/bin" >> $GITHUB_PATH
           echo "$(brew --prefix cx-llvm)/bin" >> $GITHUB_PATH
-          
-      - name: Create the Build Directory
-        run: |
-          mkdir -p $BUILD_DIR
-          mkdir -p $WINE_FINAL_DIR
-          mkdir -p $WINE64_BUILD_DIR
-          mkdir -p $DXVK_BUILD_DIR
-          mkdir -p $WINETRICKS_DATA_DIR
-          mkdir -p $FINAL_DIR
-          mkdir -p $OUTPUT_DIR
 
       - name: Configure Wine64
         run: |
