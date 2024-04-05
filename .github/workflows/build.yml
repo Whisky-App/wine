@@ -1,0 +1,167 @@
+name: Build Wine
+on:
+  push:
+    branches:
+      - '7.7'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-13
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Homebrew Packages
+        run: |
+          REQUIRED_PACKAGES=(
+              # Build Dependencies
+              "bison"
+              "pkg-config"
+              "mingw-w64"
+
+              # Utilities (DXVK)
+              "jq"
+
+              # Dependencies
+              "freetype"
+              "gettext"
+              "gnutls"
+              "gstreamer"
+              "sdl2"
+              "molten-vk"
+          )
+
+          brew install "${REQUIRED_PACKAGES[@]}"
+
+      - name: Link bison
+        run: |
+          echo "BISON=\"/usr/local/opt/bison/bin/bison\"" >> $GITHUB_ENV
+
+      - name: Build Environment Varrables
+        run: |
+          HOMEBREW_PATH=$(brew --prefix)
+
+          PACKAGES=(
+              "freetype"
+              "gettext"
+              "gnutls"
+              "gstreamer"
+              "sdl2"
+              "molten-vk"
+          )
+
+
+          LDFLAGS="$LDFLAGS"
+          CFLAGS="$CFLAGS"
+
+          # Create environment
+          for PACKAGE in ${PACKAGES[@]}; do
+              LDFLAGS="-L$HOMEBREW_PATH/opt/$PACKAGE/lib $LDFLAGS"
+              CFLAGS="-I$HOMEBREW_PATH/opt/$PACKAGE/include $CPPFLAGS"
+          done
+
+          # Additional flags
+          LDFLAGS="-Wl,-rpath,$HOMEBREW_PATH/lib $LDFLAGS"
+          LDFLAGS="-Wl,-rpath,@executable_path/../lib/external $LDFLAGS"
+
+          CFLAGS="-O3 -Wno-deprecated-declarations -Wno-incompatible-pointer-types $CFLAGS"
+
+          # Return the environment
+          echo "LDFLAGS=\"$LDFLAGS\"" >> $GITHUB_ENV
+          echo "CPPFLAGS=\"$CPPFLAGS\"" >> $GITHUB_ENV
+          echo "MACOSX_DEPLOYMENT_TARGET=10.14" >> $GITHUB_ENV
+          
+      - name: Create the Build Directory
+        run: |
+          BUILD_DIR=$(mktemp -d)
+          WINE_FINAL_DIR="$GITHUB_WORKSPACE/wine"
+          WINE64_BUILD_DIR="$GITHUB_WORKSPACE/wine64"
+          DXVK_BUILD_DIR="$GITHUB_WORKSPACE/dxvk"
+          FINAL_DIR="$GITHUB_WORKSPACE/Libraries"
+
+          mkdir -p "$WINE_FINAL_DIR"
+          mkdir -p "$WINE64_BUILD_DIR"
+          mkdir -p "$DXVK_BUILD_DIR"
+          mkdir -p "$WINETRICKS_DATA_DIR"
+          mkdir -p "$FINAL_DIR"
+
+          echo "BUILD_DIR=\"$BUILD_DIR\"" >> $GITHUB_ENV
+          echo "WINE_FINAL_DIR=\"$WINE_FINAL_DIR\"" >> $GITHUB_ENV
+          echo "WINE64_BUILD_DIR=\"$WINE64_BUILD_DIR\"" >> $GITHUB_ENV
+          echo "DXVK_BUILD_DIR=\"$DXVK_BUILD_DIR\"" >> $GITHUB_ENV
+          echo "FINAL_DIR=\"$FINAL_DIR\"" >> $GITHUB_ENV
+
+      - name: Set Variables
+        run: |
+          WINE_CONFIGURE_FLAGS=(
+            "--disable-option-checking"
+            "--disable-tests"
+            "--enable-win64"
+            "--enable-archs=i386,x86_64"
+            "--prefix=$WINE_FINAL_DIR"
+            "--without-alsa"
+            "--without-capi"
+            "--with-coreaudio" # Required Package: NONE - Built-in
+            "--with-cups" # Required Package: NONE - Built-in
+            "--without-dbus"
+            "--without-fontconfig"
+            "--with-freetype" # Required Package: freetype - Homebrew
+            "--with-gettext" # Required Package: gettext - Homebrew
+            "--without-gettextpo"
+            "--without-gphoto"
+            "--with-gnutls" # Required Package: gnutls - Homebrew
+            "--without-gssapi"
+            "--with-gstreamer" # Required Package: gstreamer - Homebrew
+            "--without-krb5"
+            "--with-mingw" # Required Package: mingw-w64 - Homebrew
+            "--without-netapi"
+            "--with-opencl" # Required Package: none - Built-in
+            "--with-opengl" # Required Package: none - Built-in
+            "--without-oss"
+            "--with-pcap" # Required Package: none - Built-in
+            "--with-pthread" # Required Package: none - Built-in
+            "--without-pulse"
+            "--without-sane"
+            "--with-sdl" # Required Package: sdl2 - Homebrew
+            "--without-udev"
+            "--with-unwind" # Required Package: None - Built-in
+            "--without-usb"
+            "--without-v4l2"
+            "--with-vulkan" # Required Package: molten-vk - Homebrew
+            "--without-x"
+          )
+
+          echo "WINE_CONFIGURE_FLAGS=\"${WINE_CONFIGURE_FLAGS[@]}\"" >> $GITHUB_ENV
+          echo "SOURCE_DIR=\"$GITHUB_WORKSPACE\""
+
+      - name: Build Wine64
+        run: |
+          cd $WINE64_BUILD_DIR
+          $SOURCE_DIR/configure $WINE_CONFIGURE_FLAGS $WINE_ADDITIONAL_CONFIG_64
+          make -j$(sysctl -n hw.logicalcpu)
+          if [ $? -ne 0 ]; then
+              echo "Failed to build Wine64... Exiting."
+              exit 1
+          fi
+          make install-lib
+
+      - name: Install DXVK
+        run: |
+          cd $DXVK_BUILD_DIR
+          DXVK_URL=$(curl -s https://api.github.com/repos/Gcenx/DXVK-MacOS/releases/latest | jq -r '.assets[] | select(.browser_download_url | contains("dxvk-macos")) | .browser_download_url')
+          curl -L -o dxvk.tar.gz $DXVK_URL
+
+      - name: Homebrew Libs [DEBUG]
+        run: |
+          ls $(brew --prefix)/lib
+
+      - name: Zip Everything [DEBUG]
+        run: |
+          zip -r -j Libraries.zip $GITHUB_WORKSPACE/*
+      
+      - name: Upload Libraries [DEBUG]
+        uses: actions/upload-artifact@v4
+        with:
+          name: Libraries
+          path: Libraries.zip
+
