@@ -198,3 +198,11 @@ jobs:
           name: Libraries
           path: $OUTPUT_DIR/Libraries.tar.gz
 
+      - name: Upload config.log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: config
+          path: $WINE64_BUILD_DIR/config.log
+
+
