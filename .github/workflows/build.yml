@@ -11,9 +11,9 @@ env:
   CXX: clang++
   CPATH: /usr/local/include
   LIBRARY_PATH: /usr/local/lib
-  CFLAGS: -g -O2 -Wno-deprecated-declarations
-  CROSSCFLAGS: -g -O2
-  LDFLAGS: -Wl,-headerpad_max_install_names -Wl,-rpath,@loader_path/../../ -Wl,-rpath,/usr/local/lib -Wl,-rpath,/opt/local/lib -Wl,-rpath,/opt/X11/lib
+  CFLAGS: -O3 -Wno-deprecated-declarations -Wno-incompatible-pointer-types
+  CROSSCFLAGS: -O3
+  LDFLAGS: -Wl,-headerpad_max_install_names -Wl,-rpath,@loader_path/../../ -Wl,-rpath,/usr/local/lib
   MACOSX_DEPLOYMENT_TARGET: 10.14
   WINE_CONFIGURE: $GITHUB_WORKSPACE/wine/configure
   BUILDROOT: $GITHUB_WORKSPACE/build
@@ -64,7 +64,7 @@ jobs:
           mkdir -p ${{ env.BUILDROOT }}/wine64
           pushd ${{ env.BUILDROOT }}/wine64
           ${{ env.WINE_CONFIGURE }} \
-            --prefix=
+            --prefix= \
             --disable-tests \
             --disable-winedbg \
             --enable-win64 \
@@ -72,30 +72,30 @@ jobs:
             --without-capi \
             --with-coreaudio \
             --with-cups \
-            --without-dbus 
-            --without-fontconfig 
+            --without-dbus \
+            --without-fontconfig \
             --with-freetype \
             --with-gettext \
-            --without-gettextpo 
-            --without-gphoto 
+            --without-gettextpo \
+            --without-gphoto \
             --with-gnutls \
-            --without-gssapi 
+            --without-gssapi \
             --with-gstreamer \
-            --without-krb5 
+            --without-krb5 \
             --with-mingw \
-            --without-netapi 
+            --without-netapi \
             --with-opencl \
             --with-opengl \
-            --without-oss 
+            --without-oss \
             --with-pcap \
             --with-pthread \
-            --without-pulse 
-            --without-sane 
+            --without-pulse \
+            --without-sane \
             --with-sdl \
-            --without-udev 
+            --without-udev \
             --with-unwind \
-            --without-usb 
-            --without-v4l2 
+            --without-usb \
+            --without-v4l2 \
             --with-vulkan \
             --without-x 
           popd
