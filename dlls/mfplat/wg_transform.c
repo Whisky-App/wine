@@ -387,7 +387,7 @@ NTSTATUS wg_transform_create(void *args)
     struct wg_encoded_format input_format = *params->input_format;
     struct wg_format output_format = *params->output_format;
     GstElement *first = NULL, *last = NULL, *element;
-    GstCaps *raw_caps, *src_caps, *sink_caps;
+    GstCaps *raw_caps, *src_caps, *sink_caps, *interim_caps;
     struct wg_transform *transform;
     GstPadTemplate *template;
     const gchar *media_type;
@@ -414,7 +414,37 @@ NTSTATUS wg_transform_create(void *args)
     transform->container = gst_bin_new("wg_transform");
     assert(transform->container);
 
-    if (!(element = try_create_transform(src_caps, raw_caps)) ||
+#ifdef __APPLE__
+    /* transforms the codecs into a format tractable by Audio Toolbox/Video Toolbox */
+    switch (input_format.encoded_type)
+    {
+        case WG_ENCODED_TYPE_H264:
+        case WG_ENCODED_TYPE_AAC:
+            interim_caps = gst_caps_copy(src_caps);
+            if (input_format.encoded_type == WG_ENCODED_TYPE_H264)
+            {
+                // should invoke h264parse -> vtdec_hw
+                gst_caps_set_simple(interim_caps, "stream-format", G_TYPE_STRING, "avc", NULL);
+                gst_caps_set_simple(interim_caps, "alignment", G_TYPE_STRING, "au", NULL);
+            }
+            else if (input_format.encoded_type == WG_ENCODED_TYPE_AAC)
+            {
+                // should invoke aacparse -> atdec
+                gst_caps_set_simple(interim_caps, "framed", G_TYPE_BOOLEAN, TRUE, NULL);
+            }
+
+            if (!(element = try_create_transform(src_caps, interim_caps)) ||
+                !transform_append_element(transform, element, &first, &last))
+                goto failed;
+            break;
+        default:
+            interim_caps = gst_caps_ref(src_caps);
+    }
+#else
+    interim_caps = gst_caps_ref(src_caps);
+#endif
+
+    if (!(element = try_create_transform(interim_caps, raw_caps)) ||
             !transform_append_element(transform, element, &first, &last))
         goto failed;
 
@@ -524,6 +554,7 @@ failed:
     gst_caps_unref(raw_caps);
     gst_caps_unref(src_caps);
     gst_caps_unref(sink_caps);
+    gst_caps_unref(interim_caps);
 
     if (params->transform)
         return S_OK;
