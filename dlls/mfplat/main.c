@@ -1096,12 +1096,32 @@ static void mft_get_reg_flags(const WCHAR *clsidW, const WCHAR *nameW, DWORD *fl
     RegCloseKey(hmft);
 }
 
+static HRESULT mft_get_name(HKEY hkey, WCHAR **name)
+{
+    DWORD size;
+
+    if (!name)
+        return S_OK;
+
+    *name = NULL;
+
+    if (!RegQueryValueExW(hkey, NULL, NULL, NULL, NULL, &size))
+    {
+        if (!(*name = CoTaskMemAlloc(size)))
+            return E_OUTOFMEMORY;
+
+        RegQueryValueExW(hkey, NULL, NULL, NULL, (BYTE *)*name, &size);
+    }
+
+    return S_OK;
+}
+
 static HRESULT mft_collect_machine_reg(struct list *mfts, const GUID *category, UINT32 flags,
         IMFPluginControl *plugin_control, const MFT_REGISTER_TYPE_INFO *input_type,
         const MFT_REGISTER_TYPE_INFO *output_type)
 {
     struct mft_registration mft, *cur;
-    HKEY hcategory, hlist;
+    HKEY hcategory, hlist, htransform, hmft;
     WCHAR clsidW[64];
     DWORD ret, size;
     int index = 0;
@@ -1122,6 +1142,17 @@ static HRESULT mft_collect_machine_reg(struct list *mfts, const GUID *category, 
         mft.category = *category;
         if (!GUIDFromString(clsidW, &mft.clsid))
             goto next;
+
+        /* get name of MFT transform */
+        if (!RegOpenKeyW(HKEY_CLASSES_ROOT, transform_keyW, &htransform))
+        {
+            if (!RegOpenKeyW(htransform, clsidW, &hmft))
+            {
+                mft_get_name(hmft, &mft.name);
+                RegCloseKey(hmft);
+            }
+            RegCloseKey(htransform);
+        }
 
         mft_get_reg_flags(clsidW, L"MFTFlags", &mft.flags);
 
@@ -1437,26 +1468,6 @@ HRESULT WINAPI MFTUnregister(CLSID clsid)
             index++;
         }
         RegCloseKey(hcategory);
-    }
-
-    return S_OK;
-}
-
-static HRESULT mft_get_name(HKEY hkey, WCHAR **name)
-{
-    DWORD size;
-
-    if (!name)
-        return S_OK;
-
-    *name = NULL;
-
-    if (!RegQueryValueExW(hkey, NULL, NULL, NULL, NULL, &size))
-    {
-        if (!(*name = CoTaskMemAlloc(size)))
-            return E_OUTOFMEMORY;
-
-        RegQueryValueExW(hkey, NULL, NULL, NULL, (BYTE *)*name, &size);
     }
 
     return S_OK;

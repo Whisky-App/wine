@@ -247,21 +247,26 @@ static ULONG WINAPI h264_decoder_Release(IMFTransform *iface)
 static HRESULT WINAPI h264_decoder_GetStreamLimits(IMFTransform *iface, DWORD *input_minimum, DWORD *input_maximum,
         DWORD *output_minimum, DWORD *output_maximum)
 {
-    FIXME("iface %p, input_minimum %p, input_maximum %p, output_minimum %p, output_maximum %p stub!\n",
+    TRACE("iface %p, input_minimum %p, input_maximum %p, output_minimum %p, output_maximum %p.!\n",
             iface, input_minimum, input_maximum, output_minimum, output_maximum);
-    return E_NOTIMPL;
+    *input_minimum = *input_maximum = 1;
+    *output_minimum = *output_maximum = 1;
+    return S_OK;
 }
 
 static HRESULT WINAPI h264_decoder_GetStreamCount(IMFTransform *iface, DWORD *inputs, DWORD *outputs)
 {
-    FIXME("iface %p, inputs %p, outputs %p stub!\n", iface, inputs, outputs);
-    return E_NOTIMPL;
+    TRACE("iface %p, inputs %p, outputs %p.\n", iface, inputs, outputs);
+    *inputs = 1;
+    *outputs = 1;
+    return S_OK;
 }
 
 static HRESULT WINAPI h264_decoder_GetStreamIDs(IMFTransform *iface, DWORD input_size, DWORD *inputs,
         DWORD output_size, DWORD *outputs)
 {
-    FIXME("iface %p, input_size %u, inputs %p, output_size %u, outputs %p stub!\n",
+    /* can return E_NOTIMPL without worry for fixed-size streams */
+    TRACE("iface %p, input_size %u, inputs %p, output_size %u, outputs %p.\n",
             iface, input_size, inputs, output_size, outputs);
     return E_NOTIMPL;
 }
@@ -312,6 +317,7 @@ static HRESULT WINAPI h264_decoder_GetAttributes(IMFTransform *iface, IMFAttribu
     return MFCreateAttributes(attributes, 0);
 }
 
+/* note: input/output attributes are not mandatory (and generally unused) */
 static HRESULT WINAPI h264_decoder_GetInputStreamAttributes(IMFTransform *iface, DWORD id,
         IMFAttributes **attributes)
 {
@@ -328,13 +334,13 @@ static HRESULT WINAPI h264_decoder_GetOutputStreamAttributes(IMFTransform *iface
 
 static HRESULT WINAPI h264_decoder_DeleteInputStream(IMFTransform *iface, DWORD id)
 {
-    FIXME("iface %p, id %u stub!\n", iface, id);
+    TRACE("iface %p, id %u.\n", iface, id);
     return E_NOTIMPL;
 }
 
 static HRESULT WINAPI h264_decoder_AddInputStreams(IMFTransform *iface, DWORD streams, DWORD *ids)
 {
-    FIXME("iface %p, streams %u, ids %p stub!\n", iface, streams, ids);
+    TRACE("iface %p, streams %u, ids %p.\n", iface, streams, ids);
     return E_NOTIMPL;
 }
 
@@ -483,20 +489,47 @@ static HRESULT WINAPI h264_decoder_SetOutputType(IMFTransform *iface, DWORD id, 
 
 static HRESULT WINAPI h264_decoder_GetInputCurrentType(IMFTransform *iface, DWORD id, IMFMediaType **type)
 {
-    FIXME("iface %p, id %u, type %p stub!\n", iface, id, type);
-    return E_NOTIMPL;
+    struct h264_decoder *decoder = impl_from_IMFTransform(iface);
+    HRESULT hr;
+
+    TRACE("iface %p, id %u, type %p.\n", iface, id, type);
+
+    if (!decoder->input_type)
+        return MF_E_TRANSFORM_TYPE_NOT_SET;
+
+    if (FAILED(hr = MFCreateMediaType(type)))
+        return hr;
+
+    if (FAILED(hr = IMFAttributes_CopyAllItems(decoder->input_type, *type)))
+        IMFMediaType_Release(*type);
+
+    return hr;
 }
 
 static HRESULT WINAPI h264_decoder_GetOutputCurrentType(IMFTransform *iface, DWORD id, IMFMediaType **type)
 {
-    FIXME("iface %p, id %u, type %p stub!\n", iface, id, type);
-    return E_NOTIMPL;
+    struct h264_decoder *decoder = impl_from_IMFTransform(iface);
+    HRESULT hr;
+
+    TRACE("iface %p, id %u, type %p.\n", iface, id, type);
+
+    if (!decoder->output_type)
+        return MF_E_TRANSFORM_TYPE_NOT_SET;
+
+    if (FAILED(hr = MFCreateMediaType(type)))
+        return hr;
+
+    if (FAILED(hr = IMFAttributes_CopyAllItems(decoder->output_type, *type)))
+        IMFMediaType_Release(*type);
+
+    return hr;
 }
 
 static HRESULT WINAPI h264_decoder_GetInputStatus(IMFTransform *iface, DWORD id, DWORD *flags)
 {
     FIXME("iface %p, id %u, flags %p stub!\n", iface, id, flags);
-    return E_NOTIMPL;
+    *flags = MFT_INPUT_STATUS_ACCEPT_DATA;
+    return S_OK;
 }
 
 static HRESULT WINAPI h264_decoder_GetOutputStatus(IMFTransform *iface, DWORD *flags)

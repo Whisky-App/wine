@@ -11,7 +11,7 @@ env:
   CPATH: /usr/local/include
   LIBRARY_PATH: /usr/local/lib
   CFLAGS: -O3 -Wno-deprecated-declarations -Wno-incompatible-pointer-types
-  CROSSCFLAGS: -O3
+  CROSSCFLAGS: -O3 -Wno-int-conversion -Wno-incompatible-pointer-types
   LDFLAGS: -Wl,-ld_classic -Wl,-headerpad_max_install_names -Wl,-rpath,@loader_path/../../ -Wl,-rpath,/usr/local/lib
   MACOSX_DEPLOYMENT_TARGET: 10.14
   WINE_CONFIGURE: $GITHUB_WORKSPACE/configure
