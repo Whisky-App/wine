@@ -163,6 +163,7 @@ extern USHORT ds32_sel DECLSPEC_HIDDEN;
 extern USHORT cs64_sel DECLSPEC_HIDDEN;
 #endif
 
+extern BOOL simulate_writecopy;
 
 extern void init_environment( int argc, char *argv[], char *envp[] ) DECLSPEC_HIDDEN;
 extern void init_startup_info(void) DECLSPEC_HIDDEN;

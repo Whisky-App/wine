@@ -2465,6 +2465,20 @@ static void dlopen_32on64_opengl32(void)
 }
 #endif
 
+BOOL simulate_writecopy;
+
+static void hacks_init(void)
+{
+    const char *env_str;
+
+    env_str = getenv("WINE_SIMULATE_WRITECOPY");
+    if (env_str) simulate_writecopy = atoi(env_str);
+    else simulate_writecopy = main_argc > 1 && (
+        strstr(main_argv[1], "UplayWebCore.exe")
+        || strstr(main_argv[1], "Battle.net.exe") /* CW HACK 23072 */
+    );
+}
+
 /***********************************************************************
  *           start_main_thread
  */
@@ -2479,6 +2493,7 @@ static void start_main_thread(void)
     signal_init_thread( teb );
     dbg_init();
     startup_info_size = server_init_process();
+    hacks_init();
     msync_init();
     esync_init();
     virtual_map_user_shared_data();
