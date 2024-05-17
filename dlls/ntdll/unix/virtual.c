@@ -4145,23 +4145,6 @@ NTSTATUS WINAPI NtProtectVirtualMemory( HANDLE process, PVOID *addr_ptr, SIZE_T 
                 vprot |= VPROT_COPIED;
                 old = get_win32_prot( vprot, view->protect );
             }
-            else if (status == STATUS_SUCCESS && (view->protect & SEC_IMAGE) &&
-                     base == (void*)NtCurrentTeb()->Peb->ImageBaseAddress)
-            {
-                /* GTA5 HACK: Mark first page as copied. */
-                const WCHAR gta5W[] = { 'g','t','a','5','.','e','x','e',0 };
-                WCHAR *name, *p;
-
-                name = NtCurrentTeb()->Peb->ProcessParameters->ImagePathName.Buffer;
-                p = wcsrchr(name, '\\');
-                p = p ? p+1 : name;
-
-                if(!wcsicmp(p, gta5W))
-                {
-                    FIXME("HACK: changing GTA5.exe vprot\n");
-                    set_page_vprot_bits(base, page_size, VPROT_COPIED, 0);
-                }
-            }
         }
         else status = STATUS_NOT_COMMITTED;
     }
