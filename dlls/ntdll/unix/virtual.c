@@ -120,6 +120,7 @@ struct file_view
 #define VPROT_GUARD      0x10
 #define VPROT_COMMITTED  0x20
 #define VPROT_WRITEWATCH 0x40
+#define VPROT_COPIED     0x80
 /* per-mapping protection flags */
 #define VPROT_SYSTEM     0x0200  /* system view (underlying mmap not under our control) */
 
