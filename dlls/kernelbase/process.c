@@ -205,8 +205,8 @@ static RTL_USER_PROCESS_PARAMETERS *create_process_params( const WCHAR *filename
     if (startup->dwFlags & STARTF_USESTDHANDLES)
     {
         params->hStdInput  = startup->hStdInput;
-        params->hStdOutput = startup->hStdOutput;
-        params->hStdError  = startup->hStdError;
+        params->hStdOutput = INVALID_HANDLE_VALUE;
+        params->hStdError  = INVALID_HANDLE_VALUE;
     }
     else if (flags & (DETACHED_PROCESS | CREATE_NEW_CONSOLE))
     {
