@@ -28,6 +28,12 @@ jobs:
       - name: Use Xcode 15
         run: sudo xcode-select -switch /Applications/Xcode_15.2.app/Contents/Developer
 
+      - name: Install ffmpeg
+        continue-on-error: true
+        run: |
+          brew tap homebrew-ffmpeg/ffmpeg
+          brew install homebrew-ffmpeg/ffmpeg/ffmpeg
+    
       - name: Install Homebrew Packages
         continue-on-error: true
         run: |
@@ -217,8 +223,6 @@ jobs:
       - name: Copy External Libs
         run: |
           LIBS=(
-              "libaribb24.0"
-              "libbluray.2"
               "libfontconfig.1"
               "libfreetype"
               "libfreetype.6"
@@ -247,32 +251,19 @@ jobs:
               "libgsttranscoder-1.0.0"
               "libgstvideo-1.0.0"
               "libgthread-2.0.0"
-              "libharfbuzz.0"
               "libhogweed.6"
               "libidn2.0"
               "libintl.8"
               "libjpeg.8"
-              "libjxl.0.10"
-              "libjxl_threads.0.10"
               "libMoltenVK"
               "libnettle.8"
               "libogg.0"
-              "libopenvino.2410"
-              "libopenvino_c.2410"
-              "libopenvino_onnx_frontend.2410"
-              "libopenvino_paddle_frontend.2410"
-              "libopenvino_pytorch_frontend.2410"
-              "libopenvino_tensorflow_frontend.2410"
-              "libopenvino_tensorflow_lite_frontend.2410"
               "liborc-0.4.0"
               "libp11-kit.0"
               "libpcre2-8.0"
               "libpostproc.57"
               "libpng16.16"
               "libpugixml.1"
-              "librav1e.0.7"
-              "librist.4"
-              "librubberband.2"
               "libsamplerate.0"
               "libSDL2-2.0.0"
               "libsoxr.0"
@@ -280,13 +271,9 @@ jobs:
               "libtasn1.6"
               "libtbb.12"
               "libunistring.5"
-              "libvidstab.1.2"
-              "libvmaf.3"
               "libvorbis.0"
               "libvorbisenc.2"
               "libvpx.8"
-              "libwebp.7"
-              "libwebpmux.3"
               "libXau.6"
               "libXdmcp.6"
               "libX11.6"
@@ -294,8 +281,6 @@ jobs:
               "libx264.164"
               "libx265.209"
               "libxcb.1"
-              "libzimg.2"
-              "libzmq.5"
           )
 
           FFMPEG_LIBS=(
