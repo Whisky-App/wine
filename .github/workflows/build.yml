@@ -42,6 +42,7 @@ jobs:
 
               # Dependencies
               "freetype"
+              "ffmpeg@6"
               "gettext"
               "gnutls"
               "gstreamer"
