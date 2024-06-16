@@ -28,6 +28,11 @@ jobs:
       - name: Use Xcode 15
         run: sudo xcode-select -switch /Applications/Xcode_15.2.app/Contents/Developer
 
+      - name: ffmpeg
+        continue-on-error: true
+        run: brew install  ffmpeg@6
+
+        
       - name: Install Homebrew Packages
         continue-on-error: true
         run: |
@@ -42,7 +47,6 @@ jobs:
 
               # Dependencies
               "freetype"
-              "ffmpeg@6"
               "gettext"
               "gnutls"
               "gstreamer"
