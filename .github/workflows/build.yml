@@ -31,6 +31,7 @@ jobs:
       - name: ffmpeg
         continue-on-error: true
         run: brew install  ffmpeg@6
+        
 
         
       - name: Install Homebrew Packages
@@ -272,7 +273,7 @@ jobs:
               "liborc-0.4.0"
               "libp11-kit.0"
               "libpcre2-8.0"
-              "libpostproc.57"
+              
               "libpng16.16"
               "libpugixml.1"
               "librav1e.0.7"
