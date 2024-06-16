@@ -245,17 +245,17 @@ done:
                 break;
             }
         }
-    if (!ret && TRACE_ON(winsock))
-    {
-        struct addrinfo *ai;
+    // if (!ret && TRACE_ON(winsock))
+    // {
+    //     struct addrinfo *ai;
 
-        for (ai = *info; ai != NULL; ai = ai->ai_next)
-        {
-            TRACE( "=> %p, flags %#x, family %d, type %d, protocol %d, len %Id, name %s, addr %s\n",
-                   ai, ai->ai_flags, ai->ai_family, ai->ai_socktype, ai->ai_protocol, ai->ai_addrlen,
-                   ai->ai_canonname, debugstr_sockaddr(ai->ai_addr) );
-        }
-    }
+    //     for (ai = *info; ai != NULL; ai = ai->ai_next)
+    //     {
+    //         TRACE( "=> %p, flags %#x, family %d, type %d, protocol %d, len %Id, name %s, addr %s\n",
+    //                ai, ai->ai_flags, ai->ai_family, ai->ai_socktype, ai->ai_protocol, ai->ai_addrlen,
+    //                ai->ai_canonname, debugstr_sockaddr(ai->ai_addr) );
+    //     }
+    // }
 
     SetLastError( ret );
     return ret;
