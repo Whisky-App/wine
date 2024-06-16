@@ -17,7 +17,7 @@ env:
   WINE_CONFIGURE: $GITHUB_WORKSPACE/configure
   BUILDROOT: $GITHUB_WORKSPACE/build
   WINE_INSTALLROOT: install
-  WINE_MONO: https://github.com/madewokherd/wine-mono/releases/download/wine-mono-7.4.1/wine-mono-7.4.1-x86.tar.xz
+  WINE_MONO: https://github.com/madewokherd/wine-mono/releases/download/wine-mono-9.0.0/wine-mono-9.0.0-x86.tar.xz
 
 jobs:
   build:
