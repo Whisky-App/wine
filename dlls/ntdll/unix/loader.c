@@ -2371,12 +2371,6 @@ static ULONG_PTR get_image_address(void)
     return 0;
 }
 
-#if defined(__APPLE__) && defined(__x86_64__)
-static __thread struct tm localtime_tls;
-struct tm *my_localtime(const time_t *timep)
-{
-    return localtime_r(timep, &localtime_tls);
-}
 
 /***********************************************************************
  *           unix_funcs
@@ -2505,10 +2499,10 @@ static void start_main_thread(void)
         load_wow64_ntdll( main_image_info.Machine );
 
     /* CX HACK 21109: dlopen opengl32.dll.so early in 32-on-64 */
-    #if defined(__APPLE__) && defined(__x86_64__)
-            if (main_image_info.Machine == IMAGE_FILE_MACHINE_I386)
-                dlopen_32on64_opengl32();
-    #endif
+#if defined(__APPLE__) && defined(__x86_64__)
+        if (main_image_info.Machine == IMAGE_FILE_MACHINE_I386)
+            dlopen_32on64_opengl32();
+#endif
     }
     else
     {
