@@ -2958,6 +2958,8 @@ static void usr1_handler( int signal, siginfo_t *siginfo, void *ucontext )
     }
 }
 
+
+
 static void sigsys_handler( int signal, siginfo_t *siginfo, void *sigcontext )
 {
     ucontext_t *ctx = sigcontext;
@@ -3317,6 +3319,11 @@ void signal_init_process(void)
     if (sigaction( SIGBUS, &sig_act, NULL ) == -1) goto error;
     sig_act.sa_sigaction = sigsys_handler;
     if (sigaction( SIGSYS, &sig_act, NULL ) == -1) goto error;
+
+    #ifdef __APPLE__
+    sig_act.sa_sigaction = sigsys_handler;
+    if (sigaction( SIGSYS, &sig_act, NULL ) == -1) goto error;
+    #endif
     return;
 
  error:
