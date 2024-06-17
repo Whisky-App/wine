@@ -2748,9 +2748,9 @@ void macdrv_window_drag_begin(HWND hwnd, const macdrv_event *event)
     if (!event->window_drag_begin.no_activate && can_window_become_foreground(hwnd) && GetForegroundWindow() != hwnd)
     {
         /* ask whether the window wants to be activated */
-        LRESULT ma = SendMessageW(hwnd, WM_MOUSEACTIVATE, (WPARAM)GetAncestor(hwnd, GA_ROOT),
-                                  MAKELONG(HTCAPTION, WM_LBUTTONDOWN));
-        if (ma != MA_NOACTIVATEANDEAT && ma != MA_NOACTIVATE)
+        // LRESULT ma = SendMessageW(hwnd, WM_MOUSEACTIVATE, (WPARAM)GetAncestor(hwnd, GA_ROOT),
+        //                           MAKELONG(HTCAPTION, WM_LBUTTONDOWN));
+        // if (ma != MA_NOACTIVATEANDEAT && ma != MA_NOACTIVATE)
         {
             TRACE("setting foreground window to %p\n", hwnd);
             SetForegroundWindow(hwnd);

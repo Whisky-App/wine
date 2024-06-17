@@ -616,11 +616,11 @@ extern void macdrv_set_view_hidden(macdrv_view v, int hidden) DECLSPEC_HIDDEN;
 extern void macdrv_add_view_opengl_context(macdrv_view v, macdrv_opengl_context c) DECLSPEC_HIDDEN;
 extern void macdrv_remove_view_opengl_context(macdrv_view v, macdrv_opengl_context c) DECLSPEC_HIDDEN;
 #ifdef HAVE_METAL_METAL_H
-extern macdrv_metal_device macdrv_create_metal_device(void) DECLSPEC_HIDDEN;
-extern void macdrv_release_metal_device(macdrv_metal_device d) DECLSPEC_HIDDEN;
-extern macdrv_metal_view macdrv_view_create_metal_view(macdrv_view v, macdrv_metal_device d) DECLSPEC_HIDDEN;
-extern macdrv_metal_layer macdrv_view_get_metal_layer(macdrv_metal_view v) DECLSPEC_HIDDEN;
-extern void macdrv_view_release_metal_view(macdrv_metal_view v) DECLSPEC_HIDDEN;
+extern macdrv_metal_device macdrv_create_metal_device(void);
+extern void macdrv_release_metal_device(macdrv_metal_device d);
+extern macdrv_metal_view macdrv_view_create_metal_view(macdrv_view v, macdrv_metal_device d);
+extern macdrv_metal_layer macdrv_view_get_metal_layer(macdrv_metal_view v);
+extern void macdrv_view_release_metal_view(macdrv_metal_view v);
 #endif
 extern int macdrv_get_view_backing_size(macdrv_view v, int backing_size[2]) DECLSPEC_HIDDEN;
 extern void macdrv_set_view_backing_size(macdrv_view v, const int backing_size[2]) DECLSPEC_HIDDEN;

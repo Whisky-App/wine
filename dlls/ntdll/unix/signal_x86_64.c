@@ -2509,6 +2509,11 @@ static inline BOOL handle_cet_nop( ucontext_t *sigcontext, CONTEXT *context )
             RIP_sig(sigcontext) += prefix_count + 3;
             TRACE_(seh)( "skipped RDSSPD/RDSSPQ instruction\n" );
             return TRUE;
+            case 0x1F:
+            /* Multibyte NOP */
+            RIP_sig(sigcontext) += prefix_count + 3; // FIXME: it might be longer
+            TRACE_(seh)( "skipped multi-byte NOP instruction at %016lx\n", (BYTE *)context->Rip );
+            return TRUE;
         }
         break;
     default:
