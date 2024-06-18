@@ -62,6 +62,8 @@
     static CRITICAL_SECTION cs = { &cs##_debug, -1, 0, 0, 0, 0 }
 
 static const char magic_loopback_addr[] = {127, 12, 34, 56};
+static const char zero_addr[] = {0, 0, 0, 0};
+
 
 const char *debugstr_sockaddr( const struct sockaddr *addr ) DECLSPEC_HIDDEN;
 

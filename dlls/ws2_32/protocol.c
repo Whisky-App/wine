@@ -148,6 +148,12 @@ static int dns_only_query( const char *node, const struct addrinfo *hints, struc
     return 0;
 }
 
+#ifdef __HACK_1__
+static const char* names[] = __HACK_1__;
+#else
+static const char* names[] = {};
+#endif
+
 /***********************************************************************
  *      getaddrinfo   (ws2_32.@)
  */
@@ -223,17 +229,33 @@ int WINAPI getaddrinfo( const char *node, const char *service,
     free( nodev6 );
 
 done:
-    if (!ret && TRACE_ON(winsock))
-    {
-        struct addrinfo *ai;
-
-        for (ai = *info; ai != NULL; ai = ai->ai_next)
-        {
-            TRACE( "=> %p, flags %#x, family %d, type %d, protocol %d, len %Id, name %s, addr %s\n",
-                   ai, ai->ai_flags, ai->ai_family, ai->ai_socktype, ai->ai_protocol, ai->ai_addrlen,
-                   ai->ai_canonname, debugstr_sockaddr(ai->ai_addr) );
+    for(int i = 0; i < ARRAYSIZE(names); i++) {
+            if(strcmp(node, names[i]) == 0) {
+                struct addrinfo *ai;
+                for (ai = *info; ai != NULL; ai = ai->ai_next)
+                {
+                    if(ai->ai_family == AF_INET) {
+                        struct sockaddr_in *sin = (struct sockaddr_in *)ai->ai_addr;
+                        sin->sin_addr.S_un.S_un_b.s_b1 = 0;
+                        sin->sin_addr.S_un.S_un_b.s_b2 = 0;
+                        sin->sin_addr.S_un.S_un_b.s_b3 = 0;
+                        sin->sin_addr.S_un.S_un_b.s_b4 = 0;
+                    }
+                }
+                break;
+            }
         }
-    }
+    // if (!ret && TRACE_ON(winsock))
+    // {
+    //     struct addrinfo *ai;
+
+    //     for (ai = *info; ai != NULL; ai = ai->ai_next)
+    //     {
+    //         TRACE( "=> %p, flags %#x, family %d, type %d, protocol %d, len %Id, name %s, addr %s\n",
+    //                ai, ai->ai_flags, ai->ai_family, ai->ai_socktype, ai->ai_protocol, ai->ai_addrlen,
+    //                ai->ai_canonname, debugstr_sockaddr(ai->ai_addr) );
+    //     }
+    // }
 
     SetLastError( ret );
     return ret;
@@ -768,6 +790,8 @@ struct hostent * WINAPI gethostbyaddr( const char *addr, int len, int family )
     }
 
     SetLastError( ret );
+    
+        
     return ret ? NULL : params.host;
 }
 
@@ -959,6 +983,17 @@ struct hostent * WINAPI gethostbyname( const char *name )
         }
 
         SetLastError( ret );
+
+
+        if(!ret) {
+            for(int i = 0; i < ARRAYSIZE(names); i++) {
+                if(strcmp(name, names[i]) == 0) {
+                    memcpy( params.host->h_addr_list[0], zero_addr, 4 );
+                    break;
+                }
+            }
+        }
+        
         return ret ? NULL : params.host;
     }
 

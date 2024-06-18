@@ -5205,6 +5205,9 @@ NTSTATUS WINAPI NtWow64ReadVirtualMemory64( HANDLE process, ULONG64 addr, void *
             if ((status = wine_server_call( req ))) size = 0;
         }
         SERVER_END_REQ;
+        #ifdef __APPLE__
+        toggle_executable_pages_for_rosetta( process, addr, size );
+        #endif
     }
     else
     {
