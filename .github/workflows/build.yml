@@ -42,7 +42,7 @@ jobs:
               "bison"
               "pkg-config"
               "gcenx/wine/cx-llvm"
-
+              "mingw-w64"
 
               # Dependencies
               "freetype"
@@ -56,14 +56,14 @@ jobs:
 
           brew install "${REQUIRED_PACKAGES[@]}"
 
-      - name: Install mingw
-        continue-on-error: true
-        run: |
-          # As of mingw-w64 12, brew uses UCRT instead of MSVCRT
-          # Wine will fail to build with UCRT, so we must rollback.
+      # - name: Install mingw
+      #   continue-on-error: true
+      #   run: |
+      #     # As of mingw-w64 12, brew uses UCRT instead of MSVCRT
+      #     # Wine will fail to build with UCRT, so we must rollback.
 
-          curl -L https://raw.githubusercontent.com/Homebrew/homebrew-core/31209a399a7b40bf2cd3abd7aee2715547ccd5bd/Formula/m/mingw-w64.rb > mingw-w64.rb && brew install mingw-w64.rb
-          rm mingw-w64.rb
+      #     curl -L https://raw.githubusercontent.com/Homebrew/homebrew-core/31209a399a7b40bf2cd3abd7aee2715547ccd5bd/Formula/m/mingw-w64.rb > mingw-w64.rb && brew install mingw-w64.rb
+      #     rm mingw-w64.rb
 
       - name: Echo Libs [DEBUG]
         run: |
