@@ -21,12 +21,12 @@ env:
 
 jobs:
   build:
-    runs-on: macos-14
+    runs-on: macos-13
     steps:
       - uses: actions/checkout@v4
 
       - name: Use Xcode 15
-        run: sudo xcode-select -switch /Applications/Xcode_15.4.app/Contents/Developer
+        run: sudo xcode-select -switch /Applications/Xcode_15.2.app/Contents/Developer
 
       - name: ffmpeg
         continue-on-error: true
@@ -42,8 +42,6 @@ jobs:
               "bison"
               "pkg-config"
               "gcenx/wine/cx-llvm"
-              "mingw-w64"
-
               # Dependencies
               "freetype"
               "gettext"
@@ -53,41 +51,31 @@ jobs:
               "molten-vk"
               "winetricks"
           )
-
           brew install "${REQUIRED_PACKAGES[@]}"
-
-      # - name: Install mingw
-      #   continue-on-error: true
-      #   run: |
-      #     # As of mingw-w64 12, brew uses UCRT instead of MSVCRT
-      #     # Wine will fail to build with UCRT, so we must rollback.
-
-      #     curl -L https://raw.githubusercontent.com/Homebrew/homebrew-core/31209a399a7b40bf2cd3abd7aee2715547ccd5bd/Formula/m/mingw-w64.rb > mingw-w64.rb && brew install mingw-w64.rb
-      #     rm mingw-w64.rb
-
+      - name: Install mingw
+        continue-on-error: true
+        run: |
+          # As of mingw-w64 12, brew uses UCRT instead of MSVCRT
+          # Wine will fail to build with UCRT, so we must rollback.
+          curl -L https://raw.githubusercontent.com/Homebrew/homebrew-core/31209a399a7b40bf2cd3abd7aee2715547ccd5bd/Formula/m/mingw-w64.rb > mingw-w64.rb && brew install mingw-w64.rb
+          rm mingw-w64.rb
       - name: Echo Libs [DEBUG]
         run: |
           echo "Brew Libs"
           ls $(brew --prefix)/lib
-
           echo "FFmpeg Libs" 
           ls $(brew --prefix ffmpeg@6)/lib
-
           echo "GStreamer Libs"
           ls $(brew --prefix gstreamer)/lib/gstreamer-1.0
-
       - name: Add bison & cx-llvm to $PATH
         run: |
           echo "$(brew --prefix bison)/bin" >> $GITHUB_PATH
           echo "$(brew --prefix cx-llvm)/bin" >> $GITHUB_PATH
-
       - name: Configure wine64
         run: |
           set -x
-
           export ac_cv_lib_soname_MoltenVK="libMoltenVK.dylib"
           export ac_cv_lib_soname_vulkan=""
-
           mkdir -p ${{ env.BUILDROOT }}/wine64
           pushd ${{ env.BUILDROOT }}/wine64
           ${{ env.WINE_CONFIGURE }} \
@@ -126,13 +114,11 @@ jobs:
             --with-vulkan \
             --without-x 
           popd
-
       - name: Build wine64
         run: |
           pushd ${{ env.BUILDROOT }}/wine64
           make -j$(sysctl -n hw.ncpu 2>/dev/null)
           popd
-
       - name: Install wine64
         run: |
           pushd ${{ env.BUILDROOT }}/wine64
@@ -142,10 +128,8 @@ jobs:
       - name: Configure wine32on64
         run: |
           set -x
-
           export ac_cv_lib_soname_MoltenVK="libMoltenVK.dylib"
           export ac_cv_lib_soname_vulkan=""
-
           mkdir -p ${{ env.BUILDROOT }}/wine32on64
           pushd ${{ env.BUILDROOT }}/wine32on64
           ${{ env.WINE_CONFIGURE }} \
@@ -188,36 +172,28 @@ jobs:
             --with-wine64=${{ env.BUILDROOT }}/wine64 \
             --without-x
           popd
-
       - name: Build wine32on64
         run: |
           pushd ${{ env.BUILDROOT }}/wine32on64
           make -j$(sysctl -n hw.ncpu 2>/dev/null)
           popd
-
       - name: Install wine32on64
         run: |
           pushd ${{ env.BUILDROOT }}/wine32on64
           make install-lib DESTDIR="$GITHUB_WORKSPACE/${{ env.WINE_INSTALLROOT }}"
           popd
-
       - name: Grab Verbs From Winetricks
         run: |
           curl -L -o verbs.txt https://raw.githubusercontent.com/Winetricks/winetricks/master/files/verbs/all.txt
-
       - name: Create Final Package
         run: |
           mkdir -p Libraries/DXVK
           mkdir -p Libraries/Wine
-
           cp -a ${{ env.WINE_INSTALLROOT }}/. Libraries/Wine/
-
           rm -rf Libraries/Wine/share/man
-
           cp -a $(brew --prefix winetricks)/bin/winetricks Libraries
           cp -a verbs.txt Libraries
           cp -a DXVK Libraries
-
       - name: Copy External Libs
         run: |
           LIBS=(
@@ -301,7 +277,6 @@ jobs:
               "libzimg.2"
               "libzmq.5"
           )
-
           FFMPEG_LIBS=(
             "libavfilter.9"
             "libavformat.60"
@@ -311,7 +286,6 @@ jobs:
             "libswresample.4"
             "libswscale.7"
           )
-
           GSTREAMER_LIBS=(
               "libgstapplemedia"
               "libgstasf"
@@ -333,36 +307,27 @@ jobs:
               "libgstvideoparsersbad"
               "libgstwavparse"
           )
-
           for i in "${LIBS[@]}"
           do
               cp -Lr $(brew --prefix)/lib/"$i".dylib Libraries/Wine/lib
           done
-
           for i in "${FFMPEG_LIBS[@]}"
           do
               cp -Lr $(brew --prefix ffmpeg@6)/lib/"$i".dylib Libraries/Wine/lib
           done
-
           mkdir Libraries/Wine/lib/gstreamer-1.0
-
           for i in "${GSTREAMER_LIBS[@]}"
           do
               cp -Lr $(brew --prefix gstreamer)/lib/gstreamer-1.0/"$i".dylib Libraries/Wine/lib/gstreamer-1.0
           done
-
           cp -a $(brew --prefix gstreamer)/lib/gstreamer-1.0/include Libraries/Wine/lib/gstreamer-1.0
-
           # Fixup brew dylib LCs
-
           update_dylib_paths() {
               local dylib_file="$1"
               local path_prefix="$2"
               echo "Processing $dylib_file..."
-
               # Extract LC_LOAD_DYLIB paths using otool
               local load_dylibs=$(otool -L "$dylib_file" | grep -v "$dylib_file" | awk '{print $1}')
-
               for path in $load_dylibs; do
                   if [[ $path != /usr/lib* && $path != /System/* ]]; then
                       # For paths not excluded, replace the prefix with @loader_path/
@@ -375,33 +340,24 @@ jobs:
                   fi
               done
           }
-
           export -f update_dylib_paths
-
           find Libraries/Wine/lib -maxdepth 1 -type f -name '*.dylib' -exec bash -c 'update_dylib_paths "$0" "@loader_path/"' {} \;
           find Libraries/Wine/lib/gstreamer-1.0 -maxdepth 1 -type f -name '*.dylib' -exec bash -c 'update_dylib_paths "$0" "@loader_path/../"' {} \;
-
           update_dylib_paths Libraries/Wine/lib/wine/x86_64-unix/winegstreamer.so "@rpath/"
-
       - name: Install GPTK
         run: |
           ditto GPTK/redist/lib/ Libraries/Wine/lib/
-
       - name: Copy Version .plist
         run: |
           cp -a WhiskyWineVersion.plist Libraries/
-
       - name: Install WineMono
         run: |
           mkdir Libraries/Wine/share/wine/mono
-
           curl -L -o mono.tar.xz ${{ env.WINE_MONO }}
           tar -xzf mono.tar.xz -C Libraries/Wine/share/wine/mono
-
       - name: Build Checksum
         run: |
           find ./Libraries -type f -exec shasum "{}" + > SUMS.sha
-
       - name: Upload config64.log
         if: failure()
         uses: actions/upload-artifact@v4
