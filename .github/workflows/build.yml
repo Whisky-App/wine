@@ -21,12 +21,12 @@ env:
 
 jobs:
   build:
-    runs-on: macos-13
+    runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
 
       - name: Use Xcode 15
-        run: sudo xcode-select -switch /Applications/Xcode_15.2.app/Contents/Developer
+        run: sudo xcode-select -switch /Applications/Xcode_15.4.app/Contents/Developer
 
       - name: ffmpeg
         continue-on-error: true
