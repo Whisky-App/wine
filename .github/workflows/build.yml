@@ -64,7 +64,7 @@ jobs:
           ls $(brew --prefix)/lib
 
           echo "FFmpeg Libs" 
-          ls $(brew --prefix ffmpeg@6)/lib
+          ls $(brew --prefix ffmpeg@7)/lib
 
           echo "GStreamer Libs"
           ls $(brew --prefix gstreamer)/lib/gstreamer-1.0
@@ -333,7 +333,7 @@ jobs:
 
           for i in "${FFMPEG_LIBS[@]}"
           do
-              cp -Lr $(brew --prefix ffmpeg@6)/lib/"$i".dylib Libraries/Wine/lib
+              cp -Lr $(brew --prefix ffmpeg@7)/lib/"$i".dylib Libraries/Wine/lib
           done
 
           mkdir Libraries/Wine/lib/gstreamer-1.0
