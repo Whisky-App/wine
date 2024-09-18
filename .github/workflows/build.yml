@@ -267,7 +267,6 @@ jobs:
               "libsoxr.0"
               "libsrt.1.5"
               "libtasn1.6"
-              "libtbb.12"
               "libunistring.5"
               "libvidstab.1.2"
               "libvmaf.3"
