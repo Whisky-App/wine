@@ -258,7 +258,6 @@ jobs:
               "libp11-kit.0"
               "libpcre2-8.0"
               "libpng16.16"
-              "libpugixml.1"
               "librav1e.0.7"
               "librist.4"
               "librubberband.2"
