@@ -287,13 +287,13 @@ jobs:
           )
 
           FFMPEG_LIBS=(
-            "libavfilter.9"
-            "libavformat.60"
-            "libavcodec.60"
-            "libavutil.58"
-            "libpostproc.57"
-            "libswresample.4"
-            "libswscale.7"
+            "libavfilter.10"
+            "libavformat.61"
+            "libavcodec.61"
+            "libavutil.59"
+            "libpostproc.58"
+            "libswresample.5"
+            "libswscale.8"
           )
 
           GSTREAMER_LIBS=(
